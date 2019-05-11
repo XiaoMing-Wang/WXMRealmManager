@@ -23,8 +23,16 @@
 - (NSInteger)saveRLMObjectsWithArray:(NSArray<RLMObject *> *)array;         /** 增加多个 */
 - (NSInteger)saveRLMObjectsSingletonWithArray:(NSArray<RLMObject *> *)array;/** 先删除(副键)再添加 */
 
-#pragma mark _____________________________________________ 删除
+#pragma mark _____________________________________________ 查
+/** 通过主键获取单个缓存对象(主键唯一) */
+- (id)objWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
+/** 副键查询 */
+- (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;
+- (NSArray <RLMObject *>*)objWithViceKey:(id)viceKey
+                            viceKeyValue:(id)viceKeyValue
+                                   class:(Class)aClass;
 
+#pragma mark _____________________________________________ 删除
 /** 通过主键删除 */
 - (BOOL)removeRLMObjectWithObj:(RLMObject *)obj;
 - (BOOL)removeRLMObjectWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
@@ -34,15 +42,5 @@
 - (NSInteger)removeRLMObjectWithViceKey:(id)viceKey
                            viceKeyValue:(id)viceKeyValue
                                   class:(Class)aClass;
-
-#pragma mark _____________________________________________ 查
-
-/** 通过主键获取单个缓存对象(主键唯一) */
-- (id)objWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
-/** 副键查询 */
-- (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;
-- (NSArray <RLMObject *>*)objWithViceKey:(id)viceKey
-                            viceKeyValue:(id)viceKeyValue
-                                   class:(Class)aClass;
 @end
 
