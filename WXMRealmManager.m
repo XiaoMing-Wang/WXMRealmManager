@@ -8,7 +8,6 @@
 #define KLibraryboxPath \
 NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject
 #define CacheRealms [KLibraryboxPath stringByAppendingPathComponent:@"CacheRealms"] /** 文件夹  */
-
 #import "WXMRealmManager.h"
 
 @interface WXMRealmManager ()
@@ -32,7 +31,8 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
         return YES;
     } @catch (NSException *exception) {} @finally {}
     if (primaryKey == nil) {  NSLog(@"添加失败----请确认是否设置primaryKey"); }
-    return NO;
+    if (primaryKey == nil) return NO;
+    return YES;
 }
 - (NSInteger)saveRLMObjectsWithArray:(NSArray<RLMObject *> *)array {
     __block NSInteger successCount = 0;
@@ -40,6 +40,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
         BOOL success = [self saveRLMObjectWithObj:obj];
         if (success) successCount ++;
     }];
+    if (successCount == 0) {  NSLog(@"一个也没存进去"); }
     return successCount;
 }
 - (NSInteger)saveRLMObjectsSingletonWithArray:(NSArray<RLMObject *> *)array {
@@ -60,6 +61,8 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
 /** 通过主键获取单个缓存对象(主键唯一) */
 - (id)objWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass {
     if (!primaryKeyValue || !aClass) return nil;
+    
+    id obj = nil;
     @try {
         NSString *primaryKey = [aClass valueForKey:@"primaryKey"];
         RLMRealm *realm = [self realmWithClass:aClass];
@@ -69,15 +72,14 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
             conditions = [NSString stringWithFormat:@"%@ = %@",primaryKey,primaryKeyValue];
         }
         NSInteger index = [results indexOfObjectWhere:conditions];
-        id obj = [results objectAtIndex:index];
+        obj = [results objectAtIndex:index];
         if (obj) return obj;
-        return nil;
-    } @catch (NSException *exception) {
-        NSLog(@"查询失败----请确认是否设置primaryKey 或者 参数类型是否匹配");
-    } @finally {}
+    } @catch (NSException *exception) { } @finally {}
+    if (obj == nil) { NSLog(@"查询失败----请确认是否设置primaryKey 或者 参数类型是否匹配"); }
     return nil;
 }
 
+/** 副键 */
 /** 通过副键获取多个缓存对象(副键不唯一) */
 - (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass {
     if (!viceKeyValue || !aClass) return nil;
@@ -94,20 +96,21 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
                             viceKeyValue:(id)viceKeyValue
                                    class:(Class)aClass {
     if (!viceKeyValue || !aClass || !viceKey) return nil;
+    
+    NSMutableArray *objsArray = nil;
     @try {
         NSString *viceKeyValueString = [NSString stringWithFormat:@"%@",viceKeyValue];
         RLMRealm *realm = [self realmWithClass:aClass];
         RLMResults *results = [aClass allObjectsInRealm:realm];
-        NSMutableArray *objsArray = @[].mutableCopy;
+        objsArray = @[].mutableCopy;
         for(RLMObject *obj in results) {
             id value = [obj valueForKey:viceKey];
             NSString * valueString = [NSString stringWithFormat:@"%@",value];
             if ([viceKeyValueString isEqualToString:valueString])[objsArray addObject:obj];
         }
         return objsArray;
-    } @catch (NSException *exception) {
-        NSLog(@"查询数组失败----请确认viceKey正确");
-    } @finally {}
+    } @catch (NSException *exception) { } @finally {}
+    if (objsArray == nil) {NSLog(@"查询数组失败----请确认viceKey正确"); };
     return nil;
 }
 
@@ -193,7 +196,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
         [RLMRealm defaultRealm];
     } @catch (NSException *exception) {} @finally {}
 }
-/** 删除数据库 */
+/** 删除数据库(全删) */
 - (void)cleanRealm {
     @try {
         NSDirectoryEnumerator *dirEnum = [[NSFileManager defaultManager] enumeratorAtPath:CacheRealms];
