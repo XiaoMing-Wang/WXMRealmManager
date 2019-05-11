@@ -26,8 +26,7 @@
 #pragma mark _____________________________________________ 查
 /** 通过主键获取单个缓存对象(主键唯一) */
 - (id)objWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
-/** 副键查询 */
-- (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;
+- (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;/** 副键查询 */
 - (NSArray <RLMObject *>*)objWithViceKey:(id)viceKey
                             viceKeyValue:(id)viceKeyValue
                                    class:(Class)aClass;
@@ -36,9 +35,7 @@
 /** 通过主键删除 */
 - (BOOL)removeRLMObjectWithObj:(RLMObject *)obj;
 - (BOOL)removeRLMObjectWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
-
-/** 通过副键删除 */
-- (NSInteger)removeRLMObjectWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;
+- (NSInteger)removeRLMObjectWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;/** 副键删除 */
 - (NSInteger)removeRLMObjectWithViceKey:(id)viceKey
                            viceKeyValue:(id)viceKeyValue
                                   class:(Class)aClass;
