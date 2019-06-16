@@ -34,6 +34,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     if (primaryKey == nil) return NO;
     return YES;
 }
+
 - (NSInteger)saveRLMObjectsWithArray:(NSArray<RLMObject *> *)array {
     __block NSInteger successCount = 0;
     [array enumerateObjectsUsingBlock:^(RLMObject *obj, NSUInteger idx, BOOL *stop) {
@@ -43,6 +44,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     if (successCount == 0) {  NSLog(@"一个也没存进去"); }
     return successCount;
 }
+
 - (NSInteger)saveRLMObjectsSingletonWithArray:(NSArray<RLMObject *> *)array {
     RLMObject * firstObj = array.firstObject;
     NSString *viceKey = nil;
@@ -208,6 +210,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
         }
     } @catch (NSException *exception) { } @finally {}
 }
+
 /** 创建数据库存储文件 */
 + (void)load {
     NSFileManager* man = [NSFileManager defaultManager];
@@ -219,6 +222,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     }
     NSLog(@"%@",CacheRealms);
 }
+
 /** 获取realm数据库 */
 - (RLMRealm *)realmWithClass:(Class)aClass {
     NSString * className = [aClass valueForKey:@"className"];
