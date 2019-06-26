@@ -7,7 +7,7 @@
 //Library路径
 #define KLibraryboxPath \
 NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).firstObject
-#define CacheRealms [KLibraryboxPath stringByAppendingPathComponent:@"CacheRealms"] /** 文件夹  */
+#define USER_DATA_CACHE [KLibraryboxPath stringByAppendingPathComponent:@"USER_DATA_CACHE"]
 #import "WXMRealmManager.h"
 
 @interface WXMRealmManager ()
@@ -23,17 +23,20 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     if (!obj) return NO;
     NSString *primaryKey = nil;
     @try {
+        
         primaryKey = [obj.class valueForKey:@"primaryKey"];
         RLMRealm *realm = [self realmWithClass:obj.class];
         [realm beginWriteTransaction];
         [realm addOrUpdateObject:obj];
         [realm commitWriteTransaction];
         return YES;
+        
     } @catch (NSException *exception) {} @finally {}
-    if (primaryKey == nil) {  NSLog(@"添加失败----请确认是否设置primaryKey"); }
+    if (primaryKey == nil) { NSLog(@"添加失败----请确认是否设置primaryKey"); }
     if (primaryKey == nil) return NO;
     return YES;
 }
+
 - (NSInteger)saveRLMObjectsWithArray:(NSArray<RLMObject *> *)array {
     __block NSInteger successCount = 0;
     [array enumerateObjectsUsingBlock:^(RLMObject *obj, NSUInteger idx, BOOL *stop) {
@@ -43,19 +46,24 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     if (successCount == 0) {  NSLog(@"一个也没存进去"); }
     return successCount;
 }
+
 - (NSInteger)saveRLMObjectsSingletonWithArray:(NSArray<RLMObject *> *)array {
     RLMObject * firstObj = array.firstObject;
     NSString *viceKey = nil;
     NSString *viceKeyValue = nil;
+    
     @try {
         viceKey = [firstObj.class valueForKey:@"viceKey"];
         viceKeyValue = [firstObj valueForKey:viceKey];
     } @catch (NSException *exception) { } @finally {}
-    if (viceKey == nil || viceKeyValue == nil) {NSLog(@"请设置viceKey");};
-    if (viceKey == nil || viceKeyValue == nil) return 0;
+    if (viceKey == nil || viceKeyValue == nil) {
+        NSLog(@"请设置viceKey");
+        return 0;
+    };
     [self removeRLMObjectWithViceKeyValue:viceKeyValue class:firstObj.class];
     return [self saveRLMObjectsWithArray:array];
 }
+
 #pragma mark _____________________________________________ 取
 
 /** 通过主键获取单个缓存对象(主键唯一) */
@@ -74,6 +82,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
         NSInteger index = [results indexOfObjectWhere:conditions];
         obj = [results objectAtIndex:index];
         if (obj) return obj;
+        
     } @catch (NSException *exception) { } @finally {}
     if (obj == nil) { NSLog(@"查询失败----请确认是否设置primaryKey 或者 参数类型是否匹配"); }
     return nil;
@@ -87,11 +96,14 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     @try {
         viceKey = [aClass valueForKey:@"viceKey"];
     } @catch (NSException *exception) {} @finally {}
+    if (viceKey == nil) {
+        NSLog(@"请在model里面设置viceKey或使用 objWithViceKey:viceKeyValue:class:");
+        return nil;
+    }
     
-    if (viceKey == nil) {  NSLog(@"请在model里面设置viceKey或使用 objWithViceKey:viceKeyValue:class:"); }
-    if (viceKey == nil) return nil;
     return [self objWithViceKey:viceKey viceKeyValue:viceKeyValue class:aClass];
 }
+
 - (NSArray <RLMObject *>*)objWithViceKey:(id)viceKey
                             viceKeyValue:(id)viceKeyValue
                                    class:(Class)aClass {
@@ -131,6 +143,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     if (primaryKey == nil) return NO;
     return YES;
 }
+
 - (BOOL)removeRLMObjectWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass {
     if (!aClass || !primaryKeyValue) return NO;
     RLMObject *obj =  [self objWithPrimaryKeyValue:primaryKeyValue class:aClass];
@@ -149,6 +162,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     if (viceKey == nil) return 0;
     return [self removeRLMObjectWithViceKey:viceKey viceKeyValue:viceKeyValue class:aClass];
 }
+
 - (NSInteger)removeRLMObjectWithViceKey:(id)viceKey
                       viceKeyValue:(id)viceKeyValue
                              class:(Class)aClass {
@@ -176,6 +190,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
     });
     return manager;
 }
+
 ///** 判断数据库是否可用 */
 //- (void)judgeRealmCache {
 ////    @try {
@@ -184,6 +199,7 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
 ////        NSLog(@"数据库可用");
 ////    } @catch (NSException *exception) {  [self cleanRealm]; } @finally {}
 //}
+
 /** 数据库迁移 版本号int值 */
 - (void)realmMigration {
     RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
@@ -196,33 +212,36 @@ NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES).f
         [RLMRealm defaultRealm];
     } @catch (NSException *exception) {} @finally {}
 }
+
 /** 删除数据库(全删) */
 - (void)cleanRealm {
     @try {
-        NSDirectoryEnumerator *dirEnum = [[NSFileManager defaultManager] enumeratorAtPath:CacheRealms];
+        NSDirectoryEnumerator *dirEnum = [[NSFileManager defaultManager] enumeratorAtPath:USER_DATA_CACHE];
         NSString *fileName;
         while (fileName = [dirEnum nextObject]) {
-            NSString * path = [CacheRealms stringByAppendingPathComponent:fileName];
+            NSString * path = [USER_DATA_CACHE stringByAppendingPathComponent:fileName];
             [[NSFileManager defaultManager] removeItemAtPath:path error:nil];
             NSLog(@"正在删除%@...",fileName);
         }
     } @catch (NSException *exception) { } @finally {}
 }
+
 /** 创建数据库存储文件 */
 + (void)load {
     NSFileManager* man = [NSFileManager defaultManager];
-    NSString *cache = CacheRealms;
+    NSString *cache = USER_DATA_CACHE;
     BOOL isDir = NO;
     BOOL isExists = [man fileExistsAtPath:cache isDirectory:&isDir];
     if (!isExists || !isDir) {
         [man createDirectoryAtPath:cache withIntermediateDirectories:YES attributes:nil error:nil];
     }
-    NSLog(@"%@",CacheRealms);
+    NSLog(@"%@",USER_DATA_CACHE);
 }
+
 /** 获取realm数据库 */
 - (RLMRealm *)realmWithClass:(Class)aClass {
     NSString * className = [aClass valueForKey:@"className"];
-    NSString * path = [CacheRealms stringByAppendingPathComponent:className];
+    NSString * path = [USER_DATA_CACHE stringByAppendingPathComponent:className];
     NSURL * url = [[NSURL URLWithString:path] URLByAppendingPathExtension:@"realm"];
     return [RLMRealm realmWithURL:url];
 }

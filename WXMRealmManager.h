@@ -16,22 +16,34 @@
 + (WXMRealmManager *)sharedInstance;
 //- (void)judgeRealmCache;
 
-#pragma mark _____________________________________________ 增+改
-- (BOOL)saveRLMObjectWithObj:(RLMObject *)obj;                              /** 主键增加单个 */
-- (NSInteger)saveRLMObjectsWithArray:(NSArray<RLMObject *> *)array;         /** 副键增加多个 */
-- (NSInteger)saveRLMObjectsSingletonWithArray:(NSArray<RLMObject *> *)array;/** 副键先删除再加多个 */
+#pragma mark   增+改
 
-#pragma mark _____________________________________________ 查
-- (id)objWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;/** 主键查询 */
-- (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;/** 副键查询 */
+/** 主键增加单个 */
+- (BOOL)saveRLMObjectWithObj:(RLMObject *)obj;
+
+/** 副键增加多个 */
+- (NSInteger)saveRLMObjectsWithArray:(NSArray<RLMObject *> *)array;
+
+/** 副键先删除再加多个 */
+- (NSInteger)saveRLMObjectsSingletonWithArray:(NSArray<RLMObject *> *)array;
+
+#pragma mark   查
+/** 主键查询 */
+- (id)objWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
+
+/** 副键查询 */
+- (NSArray <RLMObject *>*)objWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;
 - (NSArray <RLMObject *>*)objWithViceKey:(id)viceKey
                             viceKeyValue:(id)viceKeyValue
                                    class:(Class)aClass;
 
-#pragma mark _____________________________________________ 删除
-- (BOOL)removeRLMObjectWithObj:(RLMObject *)obj; /** 主键删除 */
+#pragma mark   删除
+/** 主键删除 */
+- (BOOL)removeRLMObjectWithObj:(RLMObject *)obj;
 - (BOOL)removeRLMObjectWithPrimaryKeyValue:(id)primaryKeyValue class:(Class)aClass;
-- (NSInteger)removeRLMObjectWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;/** 副键删除 */
+
+/** 副键删除 */
+- (NSInteger)removeRLMObjectWithViceKeyValue:(id)viceKeyValue class:(Class)aClass;
 - (NSInteger)removeRLMObjectWithViceKey:(id)viceKey
                            viceKeyValue:(id)viceKeyValue
                                   class:(Class)aClass;
